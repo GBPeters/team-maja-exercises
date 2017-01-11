@@ -1,0 +1,10 @@
+Package: TeamMajaExercises
+Type: Package
+Title: Package contains the exercises of Team Maja
+Version: 1.0
+Date: 2017-01-11
+Author: Simon Veen & Gijs Peters
+Maintainer: Simon Veen <simon.veen@wur.nl>
+Description: Miscellanious exercises defined in the Geo-Scripting Course
+License: MIT
+RoxygenNote: 5.0.1
