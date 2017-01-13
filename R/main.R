@@ -7,5 +7,7 @@ source("./R/lesson5.R")
 # Download and extract data
 #downloadData()
 
-# Create Brick
-createLandsatBrick("LC81970242014109.*\\.tif")
+# Create Bricks
+l8brick <- createLandsatNDVIBrick("LC81970242014109")
+l5brick <- createLandsatNDVIBrick("LT51980241990098")
+raster::plotRGB(l8brick)
