@@ -8,8 +8,8 @@ source("./R/lesson5.R")
 downloadData()
 
 # Create Bricks
-l8brick <- createLandsatBrick("LC81970242014109")
-l5brick <- createLandsatBrick("LT51980241990098")
+l8brick <- createLandsatBrick("LC81970242014109", BANDS_8)
+l5brick <- createLandsatBrick("LT51980241990098", BANDS_5)
 
 # Crop bricks
 crops <- cropRasterBricks(l5brick, l8brick, "l5crop.tif", "l8crop.tif")

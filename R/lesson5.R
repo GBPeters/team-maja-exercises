@@ -12,7 +12,8 @@ DATA_LOCATIONS <- c("https://dl.dropboxusercontent.com/s/i1ylsft80ox6a32/LC81970
 DATA_DIR <- "./data"
 
 # Bands
-BANDS <- c("band3", "band4", "cfmask")
+BANDS_5 <- c("band3", "band4", "cfmask")
+BANDS_8 <- c("band4", "band5", "cfmask")
 
 ##
 #' @title downloadAndExtract
@@ -47,12 +48,15 @@ downloadData <- function(locations=DATA_LOCATIONS, datadir=DATA_DIR) {
 #' @param datadir the data directory for searching data in
 #' @return a raster brick containing data from the landsat files found by the pattern
 #' @example createLandsatBrick("LC81970242014109")
-createLandsatBrick <- function(suffix, datadir = DATA_DIR) {
-  bands = paste(BANDS, collapse="|")
+createLandsatBrick <- function(suffix, bands, datadir = DATA_DIR) {
+  # Create pattern for matching relevant files, based on the suffix and the band names
+  bands = paste(bands, collapse="|")
   pattern <- paste0("^", suffix, ".*(", bands, ")\\.tif$")
+  # Get relevant file list
   files <- list.files(datadir, pattern = pattern)
   files <- paste(datadir, files, sep="/")
   print (files)
+  # Create raster layers and brick
   rasters = lapply(files, raster)
   lbrick = brick(rasters)
   return (lbrick)
