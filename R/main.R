@@ -5,4 +5,7 @@
 source("./R/lesson5.R")
 
 # Download and extract data
-downloadData()
+#downloadData()
+
+# Create Brick
+createLandsatBrick("LC81970242014109.*\\.tif")

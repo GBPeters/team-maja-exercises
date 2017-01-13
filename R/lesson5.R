@@ -2,6 +2,9 @@
 # Lesson 5, functions for preprocessing Landsat data for NDVI calculations
 # 13-01-17, Team Maja - Simon Veen & Gijs Peters
 
+# imports
+library(raster)
+
 # Locations of downloadable data
 DATA_LOCATIONS <- c("https://dl.dropboxusercontent.com/s/i1ylsft80ox6a32/LC81970242014109-SC20141230042441.tar.gz", 
                     "https://dl.dropboxusercontent.com/s/akb9oyye3ee92h3/LT51980241990098-SC20150107121947.tar.gz")
@@ -33,3 +36,17 @@ downloadData <- function(locations=DATA_LOCATIONS, datadir=DATA_DIR) {
   print (list.files(datadir))
 }
 
+##
+#' @title createLandsatBrick
+#' @author Team Maja - Simon Veen & Gijs Peters
+#' @description Create raster brick from Landsat files
+#' @param pattern the pattern to select files on
+#' @param datadir the data directory for searching data in
+#' @return a raster brick containing data from the landsat files found by the pattern
+#' @example createLandsatBrick("LC81970242014109.*\\.tif")
+createLandsatBrick <- function(pattern, datadir = DATA_DIR) {
+  files <- list.files(datadir, pattern = pattern)
+  files <- paste(datadir, files, sep="/")
+  rasters = lapply(files, raster)
+  return (brick(rasters))
+}
