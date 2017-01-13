@@ -43,7 +43,7 @@ echo "Resampling NDVI GeoTIFF..."
 gdalwarp -tr 60 60 -r cubic $fn_ndvi $fn_res
 
 # Reproject file
-echo ""
+echo "Reproject Resampled GeoTIFF"
 gdalwarp -t_srs EPSG:4326 $fn_res $fn_reproj
 
 # Finishing, removing temporary files
