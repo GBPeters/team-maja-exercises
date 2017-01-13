@@ -7,12 +7,12 @@
 #
 # A new folder 'data' is created in the current directory, if it not yet exists.
 # All files will be downloaded and created inside this folder.
+#
 
 # Constants
 folder_name="data"
 fn_zip="gewata.zip"
 data_url="https://raw.githubusercontent.com/GeoScripting-WUR/IntroToRaster/gh-pages/data/$fn_zip"
-fn_in="LE71700552001036SGS00_SR_Gewata_INT1U.tif"
 fn_temp="input.tif"
 fn_ndvi="ndvi.tif"
 fn_res="ndvi_resampled.tif"
@@ -22,16 +22,16 @@ fn_reproj="ndvi_reprojected.tif"
 echo "Creating data folder..."
 mkdir -p data
 cd ./data
-rm -f $fn_in
 rm -f $fn_temp
 rm -f $fn_ndvi
 rm -f $fn_res
 rm -f $fn_reproj
 
-# Download and unzip data in data folder
+# Download and unzip data in data folder, set input file to present Landsat-7 ETM+ images
 echo "Extracting data..."
 curl -SO $data_url
 unzip $fn_zip
+fn_in=$(ls LE7*.tif)
 
 # Copy file and calculate NDVI
 echo "Creating NDVI GeoTIFF..."
@@ -46,6 +46,6 @@ gdalwarp -tr 60 60 -r cubic $fn_ndvi $fn_res
 echo ""
 gdalwarp -t_srs EPSG:4326 $fn_res $fn_reproj
 
-# Finishing
+# Finishing, removing temporary files
 rm $fn_temp
 echo "Finished."
