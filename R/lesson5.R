@@ -4,6 +4,7 @@
 
 # imports
 library(raster)
+library(dismo)
 
 # Locations of downloadable data
 DATA_LOCATIONS <- c("https://dl.dropboxusercontent.com/s/i1ylsft80ox6a32/LC81970242014109-SC20141230042441.tar.gz", 
@@ -15,6 +16,9 @@ DATA_DIR <- "./data"
 BANDS_5 <- c("band3", "band4", "cfmask")
 BANDS_8 <- c("band4", "band5", "cfmask")
 
+# Plot constants
+TITLE = "NDVI Differences between 1990 and 2014"
+
 ##
 #' @title downloadAndExtract
 #' @author Team Maja - Simon Veen & Gijs Peters
@@ -25,7 +29,7 @@ BANDS_8 <- c("band4", "band5", "cfmask")
 downloadAndExtract <- function(url, datadir=DATA_DIR) {
   dest = file.path(datadir, basename(url))
   download.file(url, dest)
-  untar(dest, exdir=datadir, extras="--overwrite")
+  untar(dest, exdir=datadir)
 }
 
 ##
@@ -44,14 +48,14 @@ downloadData <- function(locations=DATA_LOCATIONS, datadir=DATA_DIR) {
 #' @title createLandsatBrick
 #' @author Team Maja - Simon Veen & Gijs Peters
 #' @description Create raster brick from Landsat files
-#' @param suffix the start of the Landsat filenames to select files on
+#' @param prefix the start of the Landsat filenames to select files on
 #' @param datadir the data directory for searching data in
 #' @return a raster brick containing data from the landsat files found by the pattern
 #' @example createLandsatBrick("LC81970242014109")
-createLandsatBrick <- function(suffix, bands, datadir = DATA_DIR) {
-  # Create pattern for matching relevant files, based on the suffix and the band names
+createLandsatBrick <- function(prefix, bands, datadir = DATA_DIR) {
+  # Create pattern for matching relevant files, based on the prefix and the band names
   bands = paste(bands, collapse="|")
-  pattern <- paste0("^", suffix, ".*(", bands, ")\\.tif$")
+  pattern <- paste0("^", prefix, ".*(", bands, ")\\.tif$")
   # Get relevant file list
   files <- list.files(datadir, pattern = pattern)
   files <- paste(datadir, files, sep="/")
@@ -116,3 +120,19 @@ calculateNDVIDiff <- function(lbrick, filename="") {
   diff <- calc(lbrick, fun=function(r) {r[[length(r)]]-r[[1]]}, filename=filename)
   return(diff)
 }
+
+##
+#' @title plotDiffMap
+#' @author Team Maja - Simon Veen & Gijs Peters
+#' @description Plots a raster onto a Google satellite image
+#' @param The (difference) raster to plot
+plotDiffMap <- function(diffraster) {
+  # Reproject to  web mercator
+  projdiff <- projectRaster(diffraster, crs="+init=epsg:3857", filename="data/projdiff.tif", overwrite=TRUE)
+  # Get map and plot tiles
+  gmap(projdiff, type="hybrid", scale=1)
+  plot(map, legend=F, main=TITLE)
+  plot(projdiff, add=T, legend=F, alpha=0.8)
+}
+
+

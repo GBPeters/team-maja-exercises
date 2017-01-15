@@ -23,4 +23,6 @@ ndvis <- lapply(masked, calculateNDVI, red=1, nir=2)
 # Calculate difference
 ndvis <- brick(ndvis)
 diff <- calculateNDVIDiff(ndvis)
-plot(diff)
+
+# Plot to test
+plotDiffMap(diff)
