@@ -130,8 +130,8 @@ plotDiffMap <- function(diffraster) {
   # Reproject to  web mercator
   projdiff <- projectRaster(diffraster, crs="+init=epsg:3857", filename="data/projdiff.tif", overwrite=TRUE)
   # Get map and plot tiles
-  gmap(projdiff, type="hybrid", scale=1)
-  plot(map, legend=F, main=TITLE)
+  map <- gmap(projdiff, type="hybrid", scale=1)
+  plot(map)
   plot(projdiff, add=T, legend=F, alpha=0.8)
 }
 

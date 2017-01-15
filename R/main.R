@@ -10,15 +10,19 @@ downloadData()
 # Create Bricks
 l8brick <- createLandsatBrick("LC81970242014109", BANDS_8)
 l5brick <- createLandsatBrick("LT51980241990098", BANDS_5)
+plot(l8brick[[1]])
 
 # Crop bricks
 crops <- cropRasterBricks(l5brick, l8brick, "l5crop.tif", "l8crop.tif")
+plot(crops[[2]][[1]])
 
 # Mask clouds
 masked <- lapply(crops, maskCloudsInBrick, masklayer=1)
+plot(masked[[2]][[1]])
 
 # Calculate NDVI
 ndvis <- lapply(masked, calculateNDVI, red=1, nir=2)
+plot(ndvis[[2]])
 
 # Calculate difference
 ndvis <- brick(ndvis)
