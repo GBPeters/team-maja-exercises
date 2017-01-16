@@ -7,7 +7,7 @@
 # imports
 library(rgdal)
 library(rgeos)
-library(raster)
+library(leaflet)
 
 # constants
 DL_PLACES <- "http://www.mapcruzin.com/download-shapefile/netherlands-places-shape.zip"
@@ -64,17 +64,44 @@ selectIndustrialRailways <- function(railways) {
 }
 
 ##
-#' @title selectPointsWithinRange
+#' @title bufferGeometries
+#' @author Team Maja - Simon Veen & Gijs Peters
+#' @description Create buffer around lines
+#' @param sdf spatial dataframe to create buffer for
+#' @param range The target search (buffer) range
+#' @return A SpatialPolygons object containing the buffer
+bufferGeometries <- function(sdf, range=RANGE) {
+  buff <- gBuffer(sdf, width=range, byid=T)
+  return(buff)
+}
+
+##
+#' @title selectPointsInBuffer
 #' @author Team Maja - Simon Veen & Gijs Peters
 #' @description Select points within range of target Spatial Dataframe
-#' @param sdf The spatial dataframe to find points in
-#' @param points The SpatialPointsDataframe to find points in
-#' @param range The target search (buffer) range
+#' @param buffer The buffer spatial dataframe to find points in
+#' @param points The points to find points in
 #' @return A SpatialPointsDataframe containing the points within range
-selectPointsWithinRange <- function(sdf, points, range=RANGE) {
-  buff <- gBuffer(sdf, width=range, byid=T)
-  plot (buff, axes=T)
-  spoints <- gIntersection(points, buff, id=as.character(points$osm_id), byid=T)
+selectPointsInBuffer <- function(buffer, points) {
+  spoints <- gIntersection(points, buffer, id=as.character(points$osm_id), byid=T)
   splaces <- points[points$osm_id == rownames(spoints@coords),]
   return(splaces)
+}
+
+##
+#' @title plotLeaflet
+#' @author Team Maja - Simon Veen & Gijs Peters
+#' @description Plots the buffer and the first item from places onto a leaflet basemap
+#' @param places A SpatialPointsDataFrame containing cities
+#' @param buffer A SpatialPolygonsDataFrame
+plotLeaflet <- function(places, buffer) {
+  plcproj <- spTransform(places, CRS="+init=epsg:4326")
+  coords <- plcproj@coords
+  lon = coords[1, 1]
+  lat = coords[1, 2]
+  name = plcproj$name[1]
+  buffproj <- spTransform(buffer, CRS="+init=epsg:4326")
+  m <- leaflet(data=buffproj) %>% addTiles()
+  m <- m %>% addPolygons()
+  m %>% addMarkers(lon, lat, popup=name)
 }

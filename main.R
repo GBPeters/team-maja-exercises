@@ -21,9 +21,13 @@ industrial <- selectIndustrialRailways(railwaysRD)
 plot(industrial, axes=T)
 
 # Select cities within range
-spoints <- selectPointsWithinRange(industrial, placesRD)
+buff <- bufferGeometries(industrial)
+spoints <- selectPointsInBuffer(buff, places)
 
 # Print first point
 print(head(spoints))
 
-# The tiny track of industrial railway is in Utrecht!
+# Plot on Leaflet
+plotLeaflet(spoints, buff)
+
+# The tiny track of industrial railway is in Utrecht! Which, according to OSM, has 100000 inhabitants.
