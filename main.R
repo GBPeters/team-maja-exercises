@@ -22,10 +22,10 @@ plot(industrial, axes=T)
 
 # Select cities within range
 buff <- bufferGeometries(industrial)
-spoints <- selectPointsInBuffer(buff, places)
+spoints <- selectPointsInBuffer(buff, placesRD)
 
-# Print first point
-print(head(spoints))
+# Print points, should be only one
+print(spoints)
 
 # Plot on Leaflet
 plotLeaflet(spoints, buff)
