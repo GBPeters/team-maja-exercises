@@ -32,7 +32,7 @@ for (n in 1:6) {
 
 
 # Plot pairwise correlations between raster layers
-pairs(br)
+#pairs(br)
 
 # Create model
 fit <- createLinearModel(br, "vcfGewata")
@@ -45,3 +45,6 @@ rmse <- calculateZonalRMSE(rmsebr, predict="predictions", actual="actual")
 
 # Calculate RMSE for training polygon classes
 rmses <- calculateZonalRMSE(rmsebr, predict="predictions", actual="actual", zonepolygons = trainingPoly, zonevar="Class")
+
+print(rmse)
+print(rmses)
