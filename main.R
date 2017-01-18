@@ -30,7 +30,6 @@ for (n in 1:6) {
   br[[n]][br[[n]] > 10000] <- NA
 }
 
-
 # Plot pairwise correlations between raster layers
 #pairs(br)
 

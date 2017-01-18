@@ -17,7 +17,7 @@ calculateZonalRMSE <- function(rbrick, actual, predicted, zonepolygons=NULL, zon
   if (!is.null(zonepolygons)) {
     rzones <- rasterize(zonepolygons, rbrick, zonevar)
     rmse <- zonal(sqe, rzones)
-    rmse <- rmse[,"mean"]
+    rmse <- sqrt(rmse[,"mean"])
     names(rmse) <- unique(zonepolygons@data[,zonevar])
   } else {
     rmse <- sqrt(extract(sqe, extent(rbrick), fun = mean, na.rm=T))
