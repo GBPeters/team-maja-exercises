@@ -38,6 +38,11 @@ for (n in 1:6) {
 fit <- createLinearModel(br, "vcfGewata")
 summary(fit)
 
+# Limit model results
+pred <- predict(br, model=fit)
+pred[pred < 0] <- 0
+pred[pred > 100] <- 100
+
 # Calculate RMSE
 rmsebr <- brick(predict(br, model=fit), br[["vcfGewata"]])
 names(rmsebr) <- c("predictions", "actual")
@@ -45,6 +50,10 @@ rmse <- calculateZonalRMSE(rmsebr, predict="predictions", actual="actual")
 
 # Calculate RMSE for training polygon classes
 rmses <- calculateZonalRMSE(rmsebr, predict="predictions", actual="actual", zonepolygons = trainingPoly, zonevar="Class")
-
 print(rmse)
 print(rmses)
+
+# Plot comparison between actual and predicted values
+par(mfrow=c(1, 2))
+plot(br[["vcfGewata"]], main="Actual")
+plot(pred, main="Predicted")
