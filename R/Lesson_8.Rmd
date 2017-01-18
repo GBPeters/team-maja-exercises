@@ -1,0 +1,66 @@
+---
+title: "Lesson 8 - Team Maja"
+author: "Gijs Peters & Simon Veen"
+date: "18 januari 2017"
+output: html_document
+---
+
+This R markdown report is created for lesson 8 of the course Geo-Scripting. The first goal of the lesson was to download and load the data needed for the questions. Instead of loading them in by name, we created a generic function (downloadRasterIntoBrick.R) which will take wanted files and returns a brick.
+
+```{r, echo=FALSE}
+source("./R/downloadRastersIntoBrick.R")
+source("./R/8_createLinearModel.R")
+source("./R/downloadAndExtract.R")
+source("./R/8_calculateZonalRMSE.R")
+```
+
+We removed outliers by deleting pixels in the vcf file with values higher then 100 and in the band files we deleted pixels with values higher then 10000 (which means a reflection higher then 1).
+
+**Relationship between Landsat bands and VCF tree cover**
+
+To show the relationship between the landsat bands and VCF tree cover, we plotted the following scatter plot:
+
+```{r, echo=FALSE}
+br <- downloadRastersIntoBrick("https://raw.githubusercontent.com/GeoScripting-WUR/AdvancedRasterAnalysis/gh-pages/data",
+                         "Gewata", c("B1", "B2", "B3", "B4", "B5", "B7"), ext="rda", extras="vcfGewata.rda")
+pairs(br)
+```
+Individually, band 1 and band 2 have the highest correlation with the VCF. the lowest is found in band 4, which in the landsat imagery means the NIR band.
+
+**Summary of lm() model**
+
+A linear regression model was created in our createLinearModel(8_createLinerModel.R) function.The summary of this model is provided below.
+
+```{r, echo=FALSE}
+fit <- createLinearModel(br, "vcfGewata")
+summary(fit)
+```
+First of all, all the bands are significant, and the R-squared is quite high. The higher the value, the more significant the band is. Herefore it can be stated that band 1, 2 and 3 are the most important bands.
+
+**Predicted tree cover raster vs original VCF raster**
+the following plots compare the tree cover raster with the original VCF raster:
+```{r, echo=FALSE}
+par(mfrow=c(1, 2))
+plot(br[["vcfGewata"]], main="Actual")
+plot(pred, main="Predicted")
+```
+
+**Compute RMSE between predicted and actual tree cover values**
+The function used for the RMSE calculating can be found in 8_calculateZonalRMSE.R.
+```{r, echo=FALSE}
+rmsebr <- brick(predict(br, model=fit), br[["vcfGewata"]])
+names(rmsebr) <- c("predictions", "actual")
+rmse <- calculateZonalRMSE(rmsebr, predict="predictions", actual="actual")
+rmse
+```
+The RMSE between the predicted and actual tree cover values is 8.6038.
+
+**Differences between predicted and actual tree cover values for 3 classes**
+The training polygons from the random forest classification are used here. the RMSE is calculated seperately for each class, using the same function used in the question above.
+
+```{r, echo=FALSE}
+rmses <- calculateZonalRMSE(rmsebr, predict="predictions", actual="actual", zonepolygons = trainingPoly, zonevar="Class")
+rmses
+```
+The values above are the RMSE for each class. The model is less good for predicting values in wetland and cropland, which do have vegetation, and is better in the forest classification.
+
