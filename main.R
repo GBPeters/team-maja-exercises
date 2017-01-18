@@ -3,48 +3,45 @@
 # 13-01-17, Team Maja - Simon Veen & Gijs Peters
 #
 
+# Imports
 require(tmap) || install.packages("tmap")
 require(mime) || install.packages("mime")
 require(sp) || install.packages("sp")
+require(raster) || install.packages("raster")
 
-# Imports
-source("./R/7_downloadAndReprojectMunicipalities.R")
-source("./R/7_extractMeanValueForMunicipality.R")
-source("./R/7_plotGreenness.R")
+source("./R/downloadRastersIntoBrick.R")
+source("./R/8_createLinearModel.R")
+source("./R/downloadAndExtract.R")
+source("./R/8_calculateZonalRMSE.R")
 
 # Constants
-DL_MODIS <- "https://raw.githubusercontent.com/GeoScripting-WUR/VectorRaster/gh-pages/data/MODIS.zip"
-MODIS_FILE <- "data/MOD13A3.A2014001.h18v03.005.grd"
+
+# Load Gewata Data into raster brick
+br <- downloadRastersIntoBrick("https://raw.githubusercontent.com/GeoScripting-WUR/AdvancedRasterAnalysis/gh-pages/data",
+                         "Gewata", c("B1", "B2", "B3", "B4", "B5", "B7"), ext="rda", extras="vcfGewata.rda")
+
+# Load training polygons
+downloadAndExtract("https://github.com/GeoScripting-WUR/AdvancedRasterAnalysis/raw/gh-pages/data/trainingPoly.rda")
+load("./data/trainingPoly.rda")
+
+# Preprocessing, remove values higher than 100 in VCF
+br[["vcfGewata"]][br[["vcfGewata"]] > 100] <- NA
+for (n in 1:6) {
+  br[[n]][br[[n]] > 10000] <- NA
+}
 
 
-# Download Data
-downloadAndExtract(DL_MODIS)
+# Plot pairwise correlations between raster layers
+pairs(br)
 
-# Load Brick
-ndvibrick <- brick(MODIS_FILE)
+# Create model
+fit <- createLinearModel(br, "vcfGewata")
+summary(fit)
 
-# Download municpalities
-mun <- downloadAndReprojectAdminBorders(r=ndvibrick)
+# Calculate RMSE
+rmsebr <- brick(predict(br, model=fit), br[["vcfGewata"]])
+names(rmsebr) <- c("predictions", "actual")
+rmse <- calculateZonalRMSE(rmsebr, predict="predictions", actual="actual")
 
-# Download provinces
-prov <- downloadAndReprojectAdminBorders(r=ndvibrick, level=1)
-
-# Add mean NDVI values for months to municipalities
-mun <- extractMeanValueForMunicipality(ndvibrick[["January"]], mun, name="NDVI_January")
-mun <- extractMeanValueForMunicipality(ndvibrick[["August"]], mun, name="NDVI_August")
-mun <- extractMeanValueForMunicipality(mean(ndvibrick), mun, name="NDVI_Mean")
-prov <- extractMeanValueForMunicipality(ndvibrick[["January"]], prov, name="NDVI_January")
-
-# Print greenest municipalities
-print(paste("January:", mun$NAME_2[mun$NDVI_Mean == max(mun$NDVI_Mean)]))
-print(paste("August:", mun$NAME_2[mun$NDVI_August == max(mun$NDVI_August)]))
-print(paste("Mean:", mun$NAME_2[mun$NDVI_January == max(mun$NDVI_January)]))
-print(paste("January:", prov$NAME_1[prov$NDVI_January == max(prov$NDVI_January)]))
-
-# Plot greenness!
-plotGreenness(mun, "NDVI_January")
-plotGreenness(mun, "NDVI_August")
-plotGreenness(mun, "NDVI_Mean")
-plotGreenness(prov, "NDVI_January")
-
-
+# Calculate RMSE for training polygon classes
+rmses <- calculateZonalRMSE(rmsebr, predict="predictions", actual="actual", zonepolygons = trainingPoly, zonevar="Class")
