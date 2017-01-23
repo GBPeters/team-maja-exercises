@@ -6,6 +6,8 @@ from random import sample
 from urllib import urlretrieve
 from zipfile import ZipFile
 
+import folium
+
 # Constants
 DATA_DIR = "../data"
 POINTS_FILE = "places.shp"
@@ -82,8 +84,22 @@ def exportShapefiletoKML(infile, outfile, datadir=DATA_DIR):
     system(sh)
 
 
+def exportShapefiletoGeoJSON(infile, outfile, datadir=DATA_DIR):
+    inpath = path.join(datadir, infile)
+    outpath = path.join(datadir, outfile)
+    sh = "ogr2ogr -f GeoJSON %s %s" % (path.abspath(outpath), path.abspath(inpath))
+    system(sh)
+
+
+def loadFoliumMap(filename, datadir=DATA_DIR):
+    fn = path.join(datadir, filename)
+    fmap = folium.Map(location=[52, 5.7], zoom_start=6)
+    fmap.choropleth(geo_path=fn)
+    return fmap
+
 if __name__ == "__main__":
-    # downloadData("http://www.mapcruzin.com/download-shapefile/netherlands-places-shape.zip")
+    downloadData("http://www.mapcruzin.com/download-shapefile/netherlands-places-shape.zip")
     xys = selectRandomPoints(openShapeFile(), 2)
     writePointsToShapefile(xys, "points.shp")
     exportShapefiletoKML("points.shp", "points.kml")
+    exportShapefiletoGeoJSON("points.shp", "points.geojson")
