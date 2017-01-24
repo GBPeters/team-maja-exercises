@@ -1,35 +1,16 @@
 # Imports
-from os import mkdir, path, system
-from random import sample
-from urllib import urlretrieve
-from zipfile import ZipFile
-
-import folium
+from os import system
 from osgeo.ogr import wkbPoint, Feature, GetDriverByName, Geometry
 from osgeo.osr import SpatialReference, CoordinateTransformation
+from random import sample
+
+import folium
+
+from miscfunctions import *
 
 # Constants
-DATA_DIR = "../data"
 POINTS_FILE = "places.shp"
 SHP_DRIVER = GetDriverByName("ESRI Shapefile")
-
-
-def downloadData(url, datadir=DATA_DIR):
-    """
-    Download and extract a zip file
-    :param url: Url to download
-    :param datadir: Local directory to extract data to
-    :return: None
-    """
-    try:
-        mkdir(datadir)
-    except:
-        pass
-    dest = path.join(datadir, path.basename(url))
-    urlretrieve(url, dest)
-    zfile = ZipFile(dest)
-    zfile.extractall(datadir)
-
 
 def openShapeFile(filename=POINTS_FILE, datadir=DATA_DIR):
     '''
